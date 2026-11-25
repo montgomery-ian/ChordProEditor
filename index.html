@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ChordPro Editor</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<div id="app">
+  <div id="toolbar">
+    <div id="editorToolbar" class="toolbar-side">
+      <span id="appTitle">ChordPro Editor</span>
+      <button id="settingsBtn" type="button" title="Settings: theme and colors">&#9881;</button>
+
+      <div class="group">
+        <button id="newBtn" title="New song">New</button>
+        <button id="openBtn" title="Open .cho/.txt file">Open</button>
+        <button id="importBtn" title="Import a chord chart from a .docx or .pdf file (opens as a new song)">Import</button>
+        <button id="saveBtn" title="Save as local file">Save</button>
+        <input type="file" id="fileInput" accept=".cho,.crd,.chopro,.chordpro,.txt"/>
+        <input type="file" id="importInput" accept=".docx,.pdf,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"/>
+      </div>
+
+      <div class="group">
+        <button id="undoBtn" title="Undo (Ctrl+Z)" disabled>&#x21B6; Undo</button>
+        <button id="redoBtn" title="Redo (Ctrl+Y)" disabled>&#x21B7; Redo</button>
+      </div>
+
+      <div class="group">
+        <button id="dictateBtn" title="Dictate lyrics using speech recognition">🎤 Dictate</button>
+        <select id="dictateLang" title="Dictation language">
+          <option value="en-US">English (US)</option>
+          <option value="en-GB">English (UK)</option>
+          <option value="es-ES">Spanish</option>
+          <option value="fr-FR">French</option>
+          <option value="de-DE">German</option>
+          <option value="pt-BR">Portuguese</option>
+        </select>
+      </div>
+
+      <div class="group">
+        <label>Insert
+          <select id="insertDirectiveSelect"><option value="">directive…</option></select>
+        </label>
+        <button id="insertChordBtn" title="Wrap selection in [ ] as a chord">[Chord]</button>
+        <button id="refBtn" title="Open directive reference">? Reference</button>
+      </div>
+
+      <div class="group">
+        <label title="Text size of the ChordPro source">Font <input type="number" id="editorFontSize" value="14" min="10" max="28"/>px</label>
+      </div>
+
+      <span id="fileNameLabel">untitled.cho</span>
+    </div>
+    <div id="toolbarDivider" class="split-handle"></div>
+    <div id="chartToolbar" class="toolbar-side">
+      <div class="group">
+        <button id="exportHtmlBtn" title="Export the rendered chord chart as a standalone HTML file">Export HTML</button>
+        <button id="exportPdfBtn" title="Export the rendered chord chart as a PDF (opens the print dialog - choose &quot;Save as PDF&quot;)">Export PDF</button>
+      </div>
+
+      <div class="group letters-only">
+        <label>Transpose
+          <button id="transDown">−</button>
+          <input type="number" id="transposeSteps" value="0" min="-11" max="11"/>
+          <button id="transUp">+</button>
+        </label>
+        <label><input type="checkbox" id="useFlats"/> flats</label>
+      </div>
+
+      <div class="group">
+        <label title="How chords are written in the chart: letter names, Nashville numbers or Roman numerals (counted from the song's {key:})">Chord Style
+          <select id="notationSelect">
+            <option value="traditional">Traditional (G, C, D)</option>
+            <option value="nashville">Nashville (1, 4, 5)</option>
+            <option value="roman">Roman (I, IV, V)</option>
+          </select>
+        </label>
+        <label id="minorMarkWrap" hidden title="How Nashville numbers show a minor chord: 6m or 6-">Minor
+          <select id="minorMarkSelect">
+            <option value="m">m (6m)</option>
+            <option value="-">dash (6-)</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="group letters-only">
+        <label>Capo
+          <select id="capoSelect" title="Writes {capo:} into the song and shows the chords actually sounded with a capo on, without changing the declared key">
+            <option value="0">None</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="group letters-only">
+        <label><input type="checkbox" id="showDiagramsToggle" checked/> Chord diagrams</label>
+        <label>Instrument
+          <select id="instrumentSelect" title="Diagrams can auto-detect from an {x_instrument:} directive or a comment naming the instrument">
+            <option value="auto">Auto (song)</option>
+            <option value="guitar">Guitar</option>
+            <option value="ukulele">Ukulele</option>
+            <option value="mandolin">Mandolin</option>
+          </select>
+        </label>
+        <span id="instrumentStatus" class="muted-badge"></span>
+      </div>
+
+      <div class="group">
+        <label title="Text size of the chord chart (also used for exports)">Font <input type="number" id="previewFontSize" value="15" min="10" max="28"/>px</label>
+      </div>
+    </div>
+  </div>
+
+  <div id="split">
+    <div id="editorPane">
+      <div class="pane-header">ChordPro Source</div>
+      <textarea id="editor" spellcheck="false" placeholder="{title: My Song}
+{artist: }
+{key: G}
+
+{start_of_verse}
+[G]Amazing grace, how [C]sweet the [G]sound
+{end_of_verse}"></textarea>
+    </div>
+    <div id="divider" class="split-handle"><button id="syncScrollBtn" type="button" class="sync-scroll-btn" aria-pressed="true" title="Sync scroll: on - the editor and chart scroll together, line for line. Click to turn off.">&#8693;</button></div>
+    <div id="previewPane">
+      <div class="pane-header">Chord Chart (live)</div>
+      <div id="previewScroll"><div id="preview"></div></div>
+    </div>
+  </div>
+
+  <div id="statusBar">
+    <span id="statusLeft">Ready</span>
+    <span id="statusRight"></span>
+  </div>
+</div>
+
+<div id="dropHint">Drop a .docx, .pdf or .cho file to open it</div>
+
+<div id="importOverlay" class="modal-overlay">
+  <div class="modal-panel">
+    <p>Save changes to <strong id="importAskName">untitled.cho</strong> before opening <strong id="importAskFile"></strong>? It opens as a new song.</p>
+    <div class="modal-actions">
+      <button id="importDontSaveBtn">Don't save</button>
+      <button id="importSaveBtn" class="primary">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="settingsOverlay" class="modal-overlay">
+  <div class="modal-panel settings-panel" role="dialog" aria-label="Settings">
+    <h3>Settings</h3>
+    <label class="settings-row">Theme
+      <select id="themeSelect">
+        <option value="system">System (follow computer)</option>
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+      </select>
+    </label>
+    <div id="settingsColorsTitle" class="settings-sub">Colors</div>
+    <div id="settingsColors"></div>
+    <div class="modal-actions settings-actions">
+      <button id="resetColorsBtn" type="button">Reset colors</button>
+      <button id="settingsCloseBtn" type="button" class="primary">Done</button>
+    </div>
+  </div>
+</div>
+
+<div id="refOverlay">
+  <div id="refPanel">
+    <button id="refClose">Close</button>
+    <h2>ChordPro Directive Reference</h2>
+    <table id="refTable"></table>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/legacy/build/pdf.min.js"></script>
+<script>if (typeof pdfjsLib !== "undefined") pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/legacy/build/pdf.worker.min.js";</script>
+<script src="js/chart-style.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/docx-chords.js"></script>
+<script src="js/pdf-chords.js"></script>
+<script src="js/directives.js"></script>
+<script src="js/chords.js"></script>
+<script src="js/instruments.js"></script>
+<script src="js/parser.js"></script>
+<script src="js/renderer.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
