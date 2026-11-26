@@ -1,4 +1,3 @@
-[README.md](https://github.com/user-attachments/files/35423536/README.md)
 # ChordPro Editor
 
 A browser-based editor for [ChordPro](https://www.chordpro.org/) song sheets. Type chords and lyrics on the left, see a formatted chord chart update live on the right.
@@ -49,10 +48,10 @@ No build step, no server, no install: open `index.html` and start writing.
 - Export the chart as standalone HTML or as PDF (via the print dialog)
 
 <!-- TODO screenshot: import a .docx or .pdf chord chart and capture the converted ChordPro next to the chart. Save as docs/screenshots/import.png -->
-![Importing a PDF chart](docs/screenshots/import.png)
+<!-- ![Importing a PDF chart](docs/screenshots/import.png) -->
 
 <!-- TODO screenshot: an exported PDF page (e.g. "Save as PDF" from Export PDF). Save as docs/screenshots/export-pdf.png -->
-![Exported PDF](docs/screenshots/export-pdf.png)
+<!-- ![Exported PDF](docs/screenshots/export-pdf.png) -->
 
 **Settings**
 - Light, dark or system theme
